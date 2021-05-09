@@ -34,7 +34,8 @@ class FaceAging(object):
                  save_dir='./save',  # path to save checkpoints, samples, and summary
                  dataset_name='UTKFace',  # name of the dataset in the folder ./data
                  use_sn=True,  # use spectral norm on conv2d
-                 use_hinge_loss=True  # whether to use hinge loss on D-G losses
+                 use_hinge_loss=True,  # whether to use hinge loss on D-G losses
+                 eg_loss_type='l1'
                  ):
 
         self.session = session
@@ -124,8 +125,12 @@ class FaceAging(object):
 
         # ************************************* loss functions *******************************************************
         # loss function of encoder + generator, that's why they call it EGloss
-        # self.EG_loss = tf.nn.l2_loss(self.input_image - self.G)# / self.size_batch  # L2 loss
-        self.EG_loss = tf.reduce_mean(tf.abs(self.input_image - self.G)) / self.size_batch # L1 loss
+        if eg_loss_type == 'l1':
+            self.EG_loss = tf.reduce_mean(tf.abs(self.input_image - self.G)) / self.size_batch # L1 loss
+        elif eg_loss_type == 'l2':
+            self.EG_loss = tf.nn.l2_loss(self.input_image - self.G)# / self.size_batch  # L2 loss
+        else:
+            raise Exception('no such loss available to EGloss: {}'.format(eg_loss_type))
 
         # loss function of discriminator on z
         self.D_z_loss_prior = tf.reduce_mean(

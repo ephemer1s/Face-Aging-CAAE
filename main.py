@@ -29,6 +29,7 @@ parser.add_argument('--use_trained_model', type=str2bool, default=True, help='wh
 parser.add_argument('--use_init_model', type=str2bool, default=True, help='whether train from the init model if cannot find an existing model')
 parser.add_argument('--use_sn', type=str2bool, default=True, help='whether use spectral normalization on conv2d')
 parser.add_argument('--use_hinge_loss', type=str2bool, default=True, help='whether use hinge-loss on G-D pair losses')
+parser.add_argument('--egloss', type=str, default='l1', help='whether use l1loss on EG loss')
 
 FLAGS = parser.parse_args()
 
@@ -52,7 +53,8 @@ def main(_):
             save_dir=FLAGS.savedir,  # path to save checkpoints, samples, and summary
             dataset_name=FLAGS.dataset,  # name of the dataset in the folder ./data
             use_hinge_loss=FLAGS.use_hinge_loss,
-            use_sn=FLAGS.use_sn
+            use_sn=FLAGS.use_sn,
+            eg_loss_type=FLAGS.egloss
         )
         if FLAGS.is_train:
             print('\n\tTraining Mode')
