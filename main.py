@@ -27,6 +27,9 @@ parser.add_argument('--savedir', type=str, default='save', help='dir of saving c
 parser.add_argument('--testdir', type=str, default='test', help='dir of testing images')
 parser.add_argument('--use_trained_model', type=str2bool, default=True, help='whether train from an existing model or from scratch')
 parser.add_argument('--use_init_model', type=str2bool, default=True, help='whether train from the init model if cannot find an existing model')
+parser.add_argument('--use_sn', type=str2bool, default=True, help='whether use spectral normalization on conv2d')
+parser.add_argument('--use_hinge_loss', type=str2bool, default=True, help='whether use hinge-loss on G-D pair losses')
+
 FLAGS = parser.parse_args()
 
 
@@ -47,7 +50,9 @@ def main(_):
             session,  # TensorFlow session
             is_training=FLAGS.is_train,  # flag for training or testing mode
             save_dir=FLAGS.savedir,  # path to save checkpoints, samples, and summary
-            dataset_name=FLAGS.dataset  # name of the dataset in the folder ./data
+            dataset_name=FLAGS.dataset,  # name of the dataset in the folder ./data
+            use_hinge_loss=FLAGS.use_hinge_loss,
+            use_sn=FLAGS.use_sn
         )
         if FLAGS.is_train:
             print('\n\tTraining Mode')

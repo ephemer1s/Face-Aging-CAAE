@@ -32,7 +32,9 @@ class FaceAging(object):
                  tile_ratio=1.0,  # ratio of the length between tiled label and z
                  is_training=True,  # flag for training or testing mode
                  save_dir='./save',  # path to save checkpoints, samples, and summary
-                 dataset_name='UTKFace'  # name of the dataset in the folder ./data
+                 dataset_name='UTKFace',  # name of the dataset in the folder ./data
+                 use_sn=True,  # use spectral norm on conv2d
+                 use_hinge_loss=True  # whether to use hinge loss on D-G losses
                  ):
 
         self.session = session
@@ -50,6 +52,7 @@ class FaceAging(object):
         self.is_training = is_training
         self.save_dir = save_dir
         self.dataset_name = dataset_name
+        self.use_sn = use_sn
 
         # ************************************* input to graph ********************************************************
         self.input_image = tf.placeholder(
@@ -136,15 +139,27 @@ class FaceAging(object):
         )
         # loss function of discriminator on image
         #TODO: switch to hinge loss
-        self.D_img_loss_input = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_input_logits, labels=tf.ones_like(self.D_input_logits))
-        )
-        self.D_img_loss_G = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_G_logits, labels=tf.zeros_like(self.D_G_logits))
-        )
-        self.G_img_loss = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_G_logits, labels=tf.ones_like(self.D_G_logits))
-        )
+        if use_hinge_loss:
+            self.D_img_loss_input = tf.reduce_mean(
+                tf.losses.hinge_loss(logits=self.D_input_logits, labels=tf.ones_like(self.D_input_logits))
+            )
+            self.D_img_loss_G = tf.reduce_mean(
+                tf.losses.hinge_loss(logits=self.D_G_logits, labels=tf.zeros_like(self.D_G_logits))
+            )
+            self.G_img_loss = tf.reduce_mean(
+                tf.losses.hinge_loss(logits=self.D_G_logits, labels=tf.ones_like(self.D_G_logits))
+            )
+
+        else:
+            self.D_img_loss_input = tf.reduce_mean(
+                tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_input_logits, labels=tf.ones_like(self.D_input_logits))
+            )
+            self.D_img_loss_G = tf.reduce_mean(
+                tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_G_logits, labels=tf.zeros_like(self.D_G_logits))
+            )
+            self.G_img_loss = tf.reduce_mean(
+                tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_G_logits, labels=tf.ones_like(self.D_G_logits))
+            )
 
         # total variation to smooth the generated image
         tv_y_size = self.size_image
@@ -472,7 +487,8 @@ class FaceAging(object):
                     input_map=current,
                     num_output_channels=self.num_encoder_channels * (2 ** i),
                     size_kernel=self.size_kernel,
-                    name=name
+                    name=name,
+                    sn=self.use_sn
                 )
             current = tf.nn.relu(current)
 
@@ -595,7 +611,8 @@ class FaceAging(object):
                     input_map=current,
                     num_output_channels=num_hidden_layer_channels[i],
                     size_kernel=self.size_kernel,
-                    name=name
+                    name=name,
+                    sn=self.use_sn
                 )
             if enable_bn:
                 name = 'D_img_bn' + str(i)

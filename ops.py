@@ -4,7 +4,7 @@ import numpy as np
 from scipy.misc import imread, imresize, imsave
 
 
-def conv2d(input_map, num_output_channels, size_kernel=5, stride=2, name='conv2d', sn=False):
+def conv2d(input_map, num_output_channels, size_kernel=5, stride=2, name='conv2d', sn=True):
     with tf.variable_scope(name):
         # stddev = np.sqrt(2.0 / (np.sqrt(input_map.get_shape()[-1].value * num_output_channels) * size_kernel ** 2))
         stddev = .02
