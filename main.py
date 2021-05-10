@@ -27,8 +27,9 @@ parser.add_argument('--savedir', type=str, default='save', help='dir of saving c
 parser.add_argument('--testdir', type=str, default='test', help='dir of testing images')
 parser.add_argument('--use_trained_model', type=str2bool, default=True, help='whether train from an existing model or from scratch')
 parser.add_argument('--use_init_model', type=str2bool, default=True, help='whether train from the init model if cannot find an existing model')
-parser.add_argument('--use_sn', type=str2bool, default=True, help='whether use spectral normalization on conv2d')
-parser.add_argument('--use_hinge_loss', type=str2bool, default=True, help='whether use hinge-loss on G-D pair losses')
+parser.add_argument('--use_sn', type=str2bool, default=False, help='whether use spectral normalization on conv2d')
+parser.add_argument('--encoder_use_sn', type=str2bool, default=False, help='whether use spectral normalization on conv2d')
+parser.add_argument('--use_hinge_loss', type=str2bool, default=False, help='whether use hinge-loss on G-D pair losses')
 parser.add_argument('--egloss', type=str, default='l1', help='whether use l1loss on EG loss')
 
 FLAGS = parser.parse_args()
@@ -54,6 +55,7 @@ def main(_):
             dataset_name=FLAGS.dataset,  # name of the dataset in the folder ./data
             use_hinge_loss=FLAGS.use_hinge_loss,
             use_sn=FLAGS.use_sn,
+            encoder_use_sn=FLAGS.encoder_use_sn,
             eg_loss_type=FLAGS.egloss
         )
         if FLAGS.is_train:
@@ -71,6 +73,7 @@ def main(_):
                 num_epochs=FLAGS.epoch,  # number of epochs
                 use_trained_model=FLAGS.use_trained_model,
                 use_init_model=FLAGS.use_init_model
+                weigts=(0.0001, 0, 0)  ## the weights of adversarial loss and TV loss 
             )
         else:
             print('\n\tTesting Mode')

@@ -33,8 +33,9 @@ class FaceAging(object):
                  is_training=True,  # flag for training or testing mode
                  save_dir='./save',  # path to save checkpoints, samples, and summary
                  dataset_name='UTKFace',  # name of the dataset in the folder ./data
-                 use_sn=True,  # use spectral norm on conv2d
-                 use_hinge_loss=True,  # whether to use hinge loss on D-G losses
+                 use_sn=False,  # use spectral norm on conv2d
+                 encoder_use_sn=False,  # use spectral norm on conv2d
+                 use_hinge_loss=False,  # whether to use hinge loss on D-G losses
                  eg_loss_type='l1'
                  ):
 
@@ -54,6 +55,7 @@ class FaceAging(object):
         self.save_dir = save_dir
         self.dataset_name = dataset_name
         self.use_sn = use_sn
+        self.encoder_use_sn = encoder_use_sn
 
         # ************************************* input to graph ********************************************************
         self.input_image = tf.placeholder(
@@ -495,7 +497,7 @@ class FaceAging(object):
                     num_output_channels=self.num_encoder_channels * (2 ** i),
                     size_kernel=self.size_kernel,
                     name=name,
-                    sn=self.use_sn
+                    sn=self.encoder_use_sn
                 )
             current = tf.nn.relu(current)
 
