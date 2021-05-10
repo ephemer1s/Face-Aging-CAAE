@@ -175,6 +175,7 @@ class FaceAging(object):
 
         self.psnr = calc_psnr(self.input_image, self.G, size_batch)
         self.mae = calc_mae(self.input_image, self.G, size_batch)
+        self.ssim = calc_ssim(self.input_image, self.G, size_batch)
 
         # *********************************** trainable variables ****************************************************
         trainable_variables = tf.trainable_variables()
@@ -207,6 +208,7 @@ class FaceAging(object):
 
         self.psnr_summary = tf.summary.scalar('PSNR', self.psnr)
         self.mae_summary = tf.summary.scalar('MAE', self.mae)
+        self.ssim_summary = tf.summary.scalar('SSIM', self.ssim)
 
         # TODO: save weights of kernels via tf.summary.distribution
         # for saving the graph and variables
@@ -286,7 +288,7 @@ class FaceAging(object):
             self.D_img_loss_input_summary, self.D_img_loss_G_summary,
             self.G_img_loss_summary, self.EG_learning_rate_summary,
             self.D_G_logits_summary, self.D_input_logits_summary,
-            self.mae_summary, self.psnr_summary
+            self.mae_summary, self.psnr_summary, self.ssim_summary
         ])
         if not os.path.exists(self.save_dir):
             os.mkdir(self.save_dir)

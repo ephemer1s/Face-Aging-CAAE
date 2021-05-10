@@ -163,3 +163,7 @@ def calc_psnr(p, q, bs):
 
 def calc_mae(p, q, bs):
     return tf.reduce_sum(tf.abs(p - q)) / bs
+
+
+def calc_ssim(p, q, bs):
+    return tf.reduce_sum(tf.image.ssim(p, q, max_val=255)) / bs
