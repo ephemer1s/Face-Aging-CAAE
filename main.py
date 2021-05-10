@@ -72,7 +72,7 @@ def main(_):
             model.train(
                 num_epochs=FLAGS.epoch,  # number of epochs
                 use_trained_model=FLAGS.use_trained_model,
-                use_init_model=FLAGS.use_init_model
+                use_init_model=FLAGS.use_init_model,
                 weigts=(0.0001, 0, 0)  ## the weights of adversarial loss and TV loss 
             )
         else:
