@@ -178,6 +178,10 @@ class FaceAging(object):
         self.psnr = calc_psnr(self.input_image, self.G, size_batch)
         self.mae = calc_mae(self.input_image, self.G, size_batch)
         self.ssim = calc_ssim(self.input_image, self.G, size_batch)
+        # TODO: add fid
+        # from fid import get_fid
+        # self.fid = get_fid(self.input_image, self.G, session=self.session)
+        self.epoch = 0
 
         # *********************************** trainable variables ****************************************************
         trainable_variables = tf.trainable_variables()
@@ -211,8 +215,10 @@ class FaceAging(object):
         self.psnr_summary = tf.summary.scalar('PSNR', self.psnr)
         self.mae_summary = tf.summary.scalar('MAE', self.mae)
         self.ssim_summary = tf.summary.scalar('SSIM', self.ssim)
+        # TODO: add fid
+        # self.fid_summary = tf.summary.scalar('FID', self.fid)
 
-        # TODO: save weights of kernels via tf.summary.distribution
+        # save weights of kernels via tf.summary.distribution
         # for saving the graph and variables
         self.saver = tf.train.Saver(max_to_keep=2)
 
@@ -289,8 +295,7 @@ class FaceAging(object):
             self.EG_loss_summary, self.E_z_loss_summary,
             self.D_img_loss_input_summary, self.D_img_loss_G_summary,
             self.G_img_loss_summary, self.EG_learning_rate_summary,
-            self.D_G_logits_summary, self.D_input_logits_summary,
-            self.mae_summary, self.psnr_summary, self.ssim_summary
+            self.D_G_logits_summary, self.D_input_logits_summary
         ])
         if not os.path.exists(self.save_dir):
             os.mkdir(self.save_dir)
@@ -367,6 +372,7 @@ class FaceAging(object):
         # epoch iteration
         num_batches = len(file_names) // self.size_batch
         for epoch in range(num_epochs):
+            self.epoch = epoch
             if enable_shuffle:
                 np.random.shuffle(file_names)
             for ind_batch in range(num_batches):
@@ -738,6 +744,25 @@ class FaceAging(object):
             image_value_range=self.image_value_range,
             size_frame=[size_sample, size_sample]
         )
+        self.evaluation_score = tf.summary.merge([
+            self.mae_summary, 
+            self.psnr_summary, 
+            self.ssim_summary
+        ])
+        # self.evaluation_score = tf.summary.merge([
+        #     self.mae_summary, 
+        #     self.psnr_summary, 
+        #     self.ssim_summary,
+        #     self.fid_summary
+        # ])
+        summary = self.evaluation_score.eval(
+            feed_dict={
+                self.input_image: query_images,
+                self.G: G
+            }
+        )
+        self.writer.add_summary(summary, self.epoch)
+
 
     def custom_test(self, testing_samples_dir):
         if not self.load_checkpoint():
