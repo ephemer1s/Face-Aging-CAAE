@@ -30,7 +30,9 @@ parser.add_argument('--use_init_model', type=str2bool, default=True, help='wheth
 parser.add_argument('--use_sn', type=str2bool, default=False, help='whether use spectral normalization on conv2d')
 parser.add_argument('--encoder_use_sn', type=str2bool, default=False, help='whether use spectral normalization on conv2d')
 parser.add_argument('--use_hinge_loss', type=str2bool, default=False, help='whether use hinge-loss on G-D pair losses')
+parser.add_argument('--weigts', type=float, nargs='+', default=None, help='whether use l1loss on EG loss')
 parser.add_argument('--egloss', type=str, default='l1', help='whether use l1loss on EG loss')
+
 
 FLAGS = parser.parse_args()
 
@@ -69,11 +71,16 @@ def main(_):
                     weigts=(0, 0, 0)  ## the weights of adversarial loss and TV loss 
                 )
                 print('\n\tPre-train is done! The training will start.')
+            if FLAGS.weigts is not None:
+                weigts = tuple(FLAGS.weigts)
+            else:
+                weigts=(0.0001, 0, 0)
+            print(weigts)
             model.train(
                 num_epochs=FLAGS.epoch,  # number of epochs
                 use_trained_model=FLAGS.use_trained_model,
                 use_init_model=FLAGS.use_init_model,
-                weigts=(0.0001, 0, 0)  ## the weights of adversarial loss and TV loss 
+                weigts=weigts  ## the weights of adversarial loss and TV loss 
             )
         else:
             print('\n\tTesting Mode')
