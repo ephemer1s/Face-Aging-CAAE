@@ -256,8 +256,8 @@ class FaceAging(object):
             staircase=True
         )
 
-        # optimizer for encoder + generator
         with tf.variable_scope('opt', reuse=tf.AUTO_REUSE):
+            # optimizer for encoder + generator
             self.EG_optimizer = tf.train.AdamOptimizer(
                 learning_rate=EG_learning_rate,
                 beta1=beta1
