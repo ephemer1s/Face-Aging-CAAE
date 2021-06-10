@@ -128,9 +128,9 @@ class FaceAging(object):
         # ************************************* loss functions *******************************************************
         # loss function of encoder + generator, that's why they call it EGloss
         if eg_loss_type == 'l1':
-            self.EG_loss = tf.reduce_mean(tf.abs(self.input_image - self.G)) / self.size_batch # L1 loss
+            self.EG_loss = tf.reduce_mean(tf.abs(self.input_image - self.G))  # L1 loss
         elif eg_loss_type == 'l2':
-            self.EG_loss = tf.nn.l2_loss(self.input_image - self.G)# / self.size_batch  # L2 loss
+            self.EG_loss = tf.nn.l2_loss(self.input_image - self.G) / self.size_batch   # L2 loss
         else:
             raise Exception('no such loss available to EGloss: {}'.format(eg_loss_type))
 
@@ -744,24 +744,26 @@ class FaceAging(object):
             image_value_range=self.image_value_range,
             size_frame=[size_sample, size_sample]
         )
-        self.evaluation_score = tf.summary.merge([
-            self.mae_summary, 
-            self.psnr_summary, 
-            self.ssim_summary
-        ])
+
         # self.evaluation_score = tf.summary.merge([
         #     self.mae_summary, 
         #     self.psnr_summary, 
         #     self.ssim_summary,
         #     self.fid_summary
         # ])
-        summary = self.evaluation_score.eval(
+
+        if self.is_training:
+            self.evaluation_score = tf.summary.merge([
+                self.mae_summary, 
+                self.psnr_summary, 
+                self.ssim_summary
+            ])
+            summary = self.evaluation_score.eval(
             feed_dict={
                 self.input_image: query_images,
                 self.G: G
-            }
-        )
-        self.writer.add_summary(summary, self.epoch)
+            })
+            self.writer.add_summary(summary, self.epoch)
 
 
     def custom_test(self, testing_samples_dir):
@@ -775,6 +777,7 @@ class FaceAging(object):
         file_names = glob(testing_samples_dir)
         print(file_names)
         if len(file_names) < num_samples:
+            print(len(file_names))
             print('The number of testing images is must larger than %d' % num_samples)
             exit(0)
         sample_files = file_names[0:num_samples]
