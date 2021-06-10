@@ -85,7 +85,7 @@ def main(_):
         else:
             print('\n\tTesting Mode')
             model.custom_test(
-                testing_samples_dir=FLAGS.testdir + '/*png'
+                testing_samples_dir=FLAGS.testdir + '/*'
             )
 
 
